@@ -4,6 +4,9 @@
 
 	$repository = $connection->repository;
 
+	//provide pid of the book as an argument when running this script on drush
+	//e.g. drush php-script convert-compound-to-page-cleanup.php book:123
+
 	$root_pid = drush_shift();
 
 	$parent_obj = $repository->getObject($root_pid);
@@ -29,42 +32,14 @@
 		$page_obj = $repository->getObject($page_obj_pid);
 		drush_print("Re generating JP2");
 
+		//call islandora_large_image_create_JP2_derivate function on derivates, second argument has to be 'TRUE' to regenerate JP2 - this automatically populates RELS-INT datastream
 		$fulltextResult = islandora_large_image_create_JP2_derivative($page_obj, TRUE);
         
         // check to make sure the result was successful as reported by the function
         if ($fulltextResult['success'] != 1) {
-            print("\n\n**ERROR generating FULL_TEXT datastream for $objectPID\n");
+            print("\n\n**ERROR re-generating JP2 datastream for $page_obj\n");
             print_r($fulltextResult);
         }
-
-
-        drush_print("Re creating isMemberOf");
-
-        //store value of isMemberOf before removing
-
-		$ismemberOf = $page_obj->relationships->get(FEDORA_RELS_EXT_URI,'isMemberOf');
-
-		$ismemberOf_val = $ismemberOf[0]['object']['value'];
-
-		$page_obj->relationships->remove(FEDORA_RELS_EXT_URI,'isMemberOf');
-
-		$page_obj->relationships->add(FEDORA_RELS_EXT_URI, 'isMemberOf', $ismemberOf_val);	
-
-		drush_print("Re creating isPageOf");
-
-		$ispageOf = $page_obj->relationships->get(FEDORA_RELS_EXT_URI,'isPageOf');
-
-		$ispageof_val = $ispageOf[0]['object']['value'];
-
-		$page_obj->relationships->remove(FEDORA_RELS_EXT_URI,'isPageOf');
-
-		$page_obj->relationships->add(ISLANDORA_RELS_EXT_URI,'isPageOf',$ispageof_val);
-
-		drush_print("Re creating isSection with value of 1");
-
-		$page_obj->relationships->remove(ISLANDORA_RELS_EXT_URI,'isSection');
-
-		$page_obj->relationships->add(ISLANDORA_RELS_EXT_URI,'isSection','1',TRUE);
 
 
 		echo $page_obj_pid." updated \n";
