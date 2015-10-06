@@ -1,8 +1,12 @@
 <?php
 
-	$connection = new IslandoraTuque();
-
-	$repository = $connection->repository;
+	# repository connection parameters
+	$url      = 'localhost:8080/fedora';
+	$username = 'fedoraAdmin';
+	$password = 'fedoraAdmin';
+	# set up connection and repository variables
+	$connection = new RepositoryConnection($url, $username, $password);
+	$repository = new FedoraRepository(new FedoraApi($connection),new SimpleCache());  
 
 	//provide pid of the book as an argument when running this script on drush
 	//e.g. drush php-script convert-compound-to-page-cleanup.php book:123
@@ -20,7 +24,8 @@
 
     $page_objects = $repository->ri->itqlQuery($itql,'unlimited','0');    
 
-    require_once('../sites/all/modules/islandora/islandora_solution_pack_large_image/includes/derivatives.inc');
+    //change path accordingly for your configuration
+    require_once('/var/www/drupal/sites/all/modules/islandora/islandora_solution_pack_large_image/includes/derivatives.inc');
 
 	foreach ($page_objects as $page) {
 
