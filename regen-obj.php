@@ -33,22 +33,24 @@
     		echo "regenerating OBJ for $page_pid\n";
 
     		$obj_ds = $object['OBJ'];
+
+    		//url of image... http://fedora_repo_url:8080/objects/[pid]/datastreams/OBJ/content
     		$file_url = $repo_url.'/objects/'.$page_pid.'/datastreams/OBJ/content';
-
-			$url_info = parse_url($file_url);
-
-			$url_path_info = pathinfo($url_info['path']);
 
 			$drupal_result = drupal_http_request($file_url);
 
 
 			if (!empty($drupal_result->data)) {
+
+				//create a temporary file
 				$new_file = file_save_data($drupal_result->data, file_default_scheme().'://');
 
 				$path = drupal_realpath($new_file->uri);
 
+				//replace file...
 				$obj_ds->setContentFromFile($path);
 
+				//delete temporary file
 				file_delete($new_file);
 
 				echo "regenerating OBJ for $page_pid completed\n";
